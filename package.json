@@ -1,0 +1,42 @@
+{
+  "name": "Buffer-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "DEVMOD=true truffle console",
+    "build": "truffle compile",
+    "ganache": "ganache-cli -p 8545 > /dev/null &",
+    "test": "npm run ganache && truffle test --network development && ps aux | grep ganache | grep -v 'grep' | awk '{print $2}' | while read line; do kill $line; done",
+    "coverage": "truffle run coverage --network development",
+    "lint": "prettier './**/*.js' './**/*.sol' './**/*.md' --write",
+    "flat": "truffle-flattener test/Import.flat > build/flat.sol"
+  },
+  "author": "",
+  "license": "GPLv3",
+  "devDependencies": {
+    "@truffle/debug-utils": "*",
+    "@truffle/hdwallet-provider": "*",
+    "chai": "*",
+    "ganache-cli": "^6.12.2",
+    "mocha": "*",
+    "prettier": "*",
+    "prettier-plugin-solidity": "*",
+    "solidity-coverage": "*",
+    "truffle": "*",
+    "truffle-flattener": "*",
+    "truffle-plugin-verify": "*"
+  },
+  "dependencies": {
+    "@chainlink/contracts": "^0.2.1",
+    "@openzeppelin/contracts": "^4.3.0",
+    "@openzeppelin/test-environment": "^0.1.9",
+    "@openzeppelin/test-helpers": "^0.5.11",
+    "@uniswap/v2-periphery": "*",
+    "dotenv": "^10.0.0",
+    "ganache": "^6.4.4"
+  }
+}

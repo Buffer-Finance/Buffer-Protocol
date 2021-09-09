@@ -1,0 +1,29 @@
+on: ["push", "pull_request"]
+name: "Continuous Integration"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14.15.4
+      - name: Cache npm dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - run: npm install
+      - run: npm run test
+      # - run: npm run coverage
+
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v1
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     file: ./coverage.json
+      #     flags: unittests
+      #     name: codecov-umbrella
+      #     fail_ci_if_error: true

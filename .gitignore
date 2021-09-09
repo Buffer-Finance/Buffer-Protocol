@@ -1,0 +1,11 @@
+node_modules
+build
+build/*
+build/contracts/*
+coverage
+coverage/*
+.coverage_artifacts/*
+.coverage_contracts/*
+coverage.json
+env.env
+.env
