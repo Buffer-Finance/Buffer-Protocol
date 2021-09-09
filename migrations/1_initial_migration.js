@@ -42,8 +42,11 @@ module.exports = async function (deployer, network, [account]) {
       BNBPool.address
     );
   } else {
+    await deployer.deploy(IBFR);
+    await IBFR.deployed();
+
     await deployer.deploy(BNBPool);
-    await BNBPool.deployed();
+    const BNBPoolInstance = await BNBPool.deployed();
 
     await deployer.deploy(StakingBNB, iBFRAddress);
     await deployer.deploy(StakingiBFR, iBFRAddress, BNBPool.address);
@@ -54,5 +57,8 @@ module.exports = async function (deployer, network, [account]) {
       StakingBNB.address,
       BNBPool.address
     );
+
+    const OPTION_ISSUER_ROLE = await BNBPoolInstance.OPTION_ISSUER_ROLE.call();
+    await BNBPoolInstance.grantRole(OPTION_ISSUER_ROLE, BNBOptions.address, {from: account});
   }
 };
