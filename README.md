@@ -38,19 +38,19 @@ npm run coverage
 ## Testnet Contracts
 
 ### BufferBNBOptions
-[0x672311F8b6e426E8Cf754d59697f0A23A68AB58F](https://testnet.bscscan.com/address/0x672311F8b6e426E8Cf754d59697f0A23A68AB58F#contracts)
+[0x87B690161B6C8d4aa490EC2aA5BB08569D0CFf3A](https://testnet.bscscan.com/address/0x87B690161B6C8d4aa490EC2aA5BB08569D0CFf3A#contracts)
 
 ### BufferStakingBNB
-[0x5e53D39d6f3e84f06Ab6Ae68428cdfB9F47814D5](https://testnet.bscscan.com/address/0x5e53D39d6f3e84f06Ab6Ae68428cdfB9F47814D5#contracts)
+[0x6D318d7a200f62eB66F3eb86f7EcBB03440e9482](https://testnet.bscscan.com/address/0x6D318d7a200f62eB66F3eb86f7EcBB03440e9482#contracts)
 
 ### BufferStakingIBFR
-[0xdFE2d486f9C022de5313831a8ebFa8a1aeCb384C](https://testnet.bscscan.com/address/0xdFE2d486f9C022de5313831a8ebFa8a1aeCb384C#contracts)
+[0x6899ab5c75258886202b32960505563Fb5acF89a](https://testnet.bscscan.com/address/0x6899ab5c75258886202b32960505563Fb5acF89a#contracts)
 
 ### BufferBNBPool
-[0x28366AAbF3dA1268271c7f0C6dfEADAf4E98F87e](https://testnet.bscscan.com/address/0x28366AAbF3dA1268271c7f0C6dfEADAf4E98F87e#contracts)
+[0x4C989a68450D341c4562693057F328aF98327ab4](https://testnet.bscscan.com/address/0x4C989a68450D341c4562693057F328aF98327ab4#contracts)
 
 ### IBFR
-[0x27dBeD23A655C01f4A7A46b07bE9239293985fd3](https://testnet.bscscan.com/address/0x27dBeD23A655C01f4A7A46b07bE9239293985fd3#contracts)
+[0xa9377a4700a23BF0FCA539553C4979CF904Aa726](https://testnet.bscscan.com/address/0xa9377a4700a23BF0FCA539553C4979CF904Aa726#contracts)
 
 ### FakePriceProvider
 
