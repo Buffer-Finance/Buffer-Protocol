@@ -50,7 +50,7 @@ npm run coverage
 [0x28366AAbF3dA1268271c7f0C6dfEADAf4E98F87e](https://testnet.bscscan.com/address/0x28366AAbF3dA1268271c7f0C6dfEADAf4E98F87e#contracts)
 
 ### IBFR
-[0x18D69A2368E3F12cbE221E6a8249A8C19dC24637](https://testnet.bscscan.com/address/0x18D69A2368E3F12cbE221E6a8249A8C19dC24637#contracts)
+[0x27dBeD23A655C01f4A7A46b07bE9239293985fd3](https://testnet.bscscan.com/address/0x27dBeD23A655C01f4A7A46b07bE9239293985fd3#contracts)
 
 ### FakePriceProvider
 
