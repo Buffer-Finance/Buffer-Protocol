@@ -19,7 +19,6 @@ const params = {
 };
 
 module.exports = async function (deployer, network, [account]) {
-  const iBFRAddress = "0x27dBeD23A655C01f4A7A46b07bE9239293985fd3";
   const chainlinkTestnet = "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526";
 
   if (network === "development") {
@@ -48,8 +47,8 @@ module.exports = async function (deployer, network, [account]) {
     await deployer.deploy(BNBPool);
     const BNBPoolInstance = await BNBPool.deployed();
 
-    await deployer.deploy(StakingBNB, iBFRAddress);
-    await deployer.deploy(StakingiBFR, iBFRAddress, BNBPool.address);
+    await deployer.deploy(StakingBNB, IBFR.address);
+    await deployer.deploy(StakingiBFR, IBFR.address, BNBPool.address);
 
     await deployer.deploy(
       BNBOptions,
