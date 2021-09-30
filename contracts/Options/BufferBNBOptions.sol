@@ -26,7 +26,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol"
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /**
@@ -40,7 +40,8 @@ contract BufferBNBOptions is
     ERC721,
     ERC721Enumerable,
     ERC721Burnable,
-    AccessControl
+    AccessControl,
+    ReentrancyGuard
 {
     uint256 public nextTokenId = 0;
 
@@ -144,7 +145,7 @@ contract BufferBNBOptions is
         uint256 strike,
         OptionType optionType,
         address referrer
-    ) external payable returns (uint256 optionID) {
+    ) external payable nonReentrant returns (uint256 optionID) {
         (uint256 totalFee, uint256 settlementFee, uint256 strikeFee, ) = fees(
             period,
             amount,
