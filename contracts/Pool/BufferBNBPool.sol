@@ -74,7 +74,7 @@ contract BufferBNBPool is
 
         uint256 amount = msg.value;
 
-        if(referrer != address(0) && referrer != msg.sender){
+        if(referrer != address(0) && referrer != msg.sender && referrer != address(this)){
             uint256 referralReward = ((msg.value * referralRewardPercentage)/ACCURACY)/100;
             amount = msg.value - referralReward;      
 
