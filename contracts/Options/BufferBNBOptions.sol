@@ -66,7 +66,6 @@ contract BufferBNBOptions is
         IBufferStakingBNB staking,
         BufferBNBPool _pool
     ) ERC721("Buffer", "BFR") {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         pool = _pool;
         priceProvider = pp;
         settlementFeeRecipient = staking;
