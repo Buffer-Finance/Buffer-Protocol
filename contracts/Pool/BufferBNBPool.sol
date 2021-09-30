@@ -57,6 +57,7 @@ contract BufferBNBPool is
      */
     function revertTransfersInLockUpPeriod(bool value) external {
         _revertTransfersInLockUpPeriod[msg.sender] = value;
+        emit UpdateRevertTransfersInLockUpPeriod(msg.sender, value);
     }
 
     /*
@@ -239,48 +240,6 @@ contract BufferBNBPool is
         }
     }
 
-    /**
-     * @dev calculates x*y and outputs a emulated 512bit number as l being the lower 256bit half and h the upper 256bit half.
-     */
-    function fullMul(uint256 x, uint256 y)
-        public
-        pure
-        returns (uint256 l, uint256 h)
-    {
-        uint256 mm = mulmod(x, y, ~uint256(0));
-        l = x * y;
-        h = mm - l;
-        if (mm < l) h -= 1;
-    }
-
-    /**
-     * @dev calculates x*y/z taking care of phantom overflows.
-     */
-    function mulDiv(
-        uint256 x,
-        uint256 y,
-        uint256 z
-    ) public pure returns (uint256) {
-        (uint256 l, uint256 h) = fullMul(x, y);
-        require(h < z);
-        uint256 mm = mulmod(x, y, z);
-        if (mm > l) h -= 1;
-        l -= mm;
-        uint256 pow2 = z & (~uint256(0) - z);
-        z /= pow2;
-        l /= pow2;
-        l += h * ((~uint256(0) - pow2) / pow2 + 1);
-        uint256 r = 1;
-        r *= 2 - z * r;
-        r *= 2 - z * r;
-        r *= 2 - z * r;
-        r *= 2 - z * r;
-        r *= 2 - z * r;
-        r *= 2 - z * r;
-        r *= 2 - z * r;
-        r *= 2 - z * r;
-        return l * r;
-    }
 
     function divCeil(uint256 a, uint256 b) internal pure returns (uint256) {
         require(b > 0);

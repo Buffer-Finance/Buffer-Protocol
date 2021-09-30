@@ -48,6 +48,9 @@ interface ILiquidityPool {
 }
 
 interface IBNBLiquidityPool is ILiquidityPool {
+
+    event UpdateRevertTransfersInLockUpPeriod(address indexed account, bool value);
+
     function lock(uint256 id, uint256 amount) external payable;
 }
 
@@ -61,6 +64,14 @@ interface IBufferOptions {
 
     event Exercise(uint256 indexed id, uint256 profit);
     event Expire(uint256 indexed id, uint256 premium);
+
+    event UpdateImpliedVolatility(uint256 value);
+    event UpdateSettlementFeePercentage(uint256 value);
+    event UpdateSettlementFeeRecipient(address account);
+    event UpdateStakingFeePercentage(uint256 value);
+    event UpdateReferralRewardPercentage(uint256 value);
+    event UpdateOptionCollaterizationRatio(uint256 value);
+
     enum State {Inactive, Active, Exercised, Expired}
     enum OptionType {Invalid, Put, Call}
 
@@ -78,6 +89,9 @@ interface IBufferOptions {
 interface IBufferStaking {
     event Claim(address indexed acount, uint256 amount);
     event Profit(uint256 amount);
+    event Buy(address indexed acount, uint256 amount, uint256 transferAmount);
+    event Sell(address indexed acount, uint256 amount, uint256 transferAmount);
+    event UpdateRevertTransfersInLockUpPeriod(address indexed account, bool value);
 
     function claimProfit() external returns (uint256 profit);
 

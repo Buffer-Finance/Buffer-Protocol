@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../Interfaces/Interfaces.sol";
 
@@ -12,7 +13,9 @@ import "../Interfaces/Interfaces.sol";
  * @notice Parent class for the Staking Pools
  */
 abstract contract BufferStaking is ERC20, IBufferStaking {
-    IERC20 public immutable BUFFER;
+    using SafeERC20 for ERC20;
+
+    ERC20 public immutable BUFFER;
     uint256 public constant ACCURACY = 1e30;
     address payable public immutable FALLBACK_RECIPIENT;
 
@@ -24,7 +27,7 @@ abstract contract BufferStaking is ERC20, IBufferStaking {
     }
 
     /**
-     * @dev Returns the Max Supply of the token.
+     * @dev Returns the lot Price of the token.
      */
     function lotPrice() public view virtual returns (uint256) {
         return 1000e18;
@@ -60,12 +63,16 @@ abstract contract BufferStaking is ERC20, IBufferStaking {
         require(amountOfTokens > 0, "Amount is zero");
         require(totalSupply() + amountOfTokens <= maxSupply());
         _mint(msg.sender, amountOfTokens);
-        BUFFER.transferFrom(msg.sender, address(this), amountOfTokens * lotPrice());
+        uint256 transferAmount = amountOfTokens * lotPrice();
+        BUFFER.safeTransferFrom(msg.sender, address(this), transferAmount);
+        emit Buy(msg.sender, amountOfTokens, transferAmount);
     }
 
     function sell(uint256 amountOfTokens) external override lockupFree {
         _burn(msg.sender, amountOfTokens);
-        BUFFER.transfer(msg.sender, amountOfTokens * lotPrice());
+        uint256 transferAmount = amountOfTokens * lotPrice();
+        BUFFER.safeTransfer(msg.sender, transferAmount);
+        emit Sell(msg.sender, amountOfTokens, transferAmount);
     }
 
     /**
@@ -73,6 +80,7 @@ abstract contract BufferStaking is ERC20, IBufferStaking {
      */
     function revertTransfersInLockUpPeriod(bool value) external {
         _revertTransfersInLockUpPeriod[msg.sender] = value;
+        emit UpdateRevertTransfersInLockUpPeriod(msg.sender, value);
     }
 
     function profitOf(address account)

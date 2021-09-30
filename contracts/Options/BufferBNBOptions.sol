@@ -26,7 +26,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /**
@@ -81,6 +81,7 @@ contract BufferBNBOptions is
     function setImpliedVolRate(uint256 value) external onlyOwner {
         require(value >= 1000, "ImpliedVolRate limit is too small");
         impliedVolRate = value;
+        emit UpdateImpliedVolatility(value);
     }
 
     /**
@@ -90,6 +91,7 @@ contract BufferBNBOptions is
     function setSettlementFeePercentage(uint256 value) external onlyOwner {
         require(value < 20, "SettlementFeePercentage is too high");
         settlementFeePercentage = value;
+        emit UpdateSettlementFeePercentage(value);
     }
 
     /**
@@ -102,6 +104,7 @@ contract BufferBNBOptions is
     {
         require(address(recipient) != address(0));
         settlementFeeRecipient = recipient;
+        emit UpdateSettlementFeeRecipient(address(recipient));
     }
 
     /**
@@ -111,6 +114,7 @@ contract BufferBNBOptions is
     function setStakingFeePercentage(uint256 value) external onlyOwner {
         require(value <= 100, "StakingFeePercentage is too high");
         stakingFeePercentage = value;
+        emit UpdateStakingFeePercentage(value);
     }
 
     /**
@@ -120,6 +124,7 @@ contract BufferBNBOptions is
     function setReferralRewardPercentage(uint256 value) external onlyOwner {
         require(value <= 100, "ReferralRewardPercentage is too high");
         referralRewardPercentage = value;
+        emit UpdateReferralRewardPercentage(value);
     }
 
     /**
@@ -129,11 +134,12 @@ contract BufferBNBOptions is
     function setOptionCollaterizationRatio(uint256 value) external onlyOwner {
         require(50 <= value && value <= 100, "wrong value");
         optionCollateralizationRatio = value;
+        emit UpdateOptionCollaterizationRatio(value);
     }
 
         /**
      * @notice Creates a new option
-     * @param period Option period in seconds (1 days <= period <= 4 weeks)
+     * @param period Option period in seconds (1 days <= period <= 90 days)
      * @param amount Option amount
      * @param strike Strike price of the option
      * @param optionType Call or Put option type
