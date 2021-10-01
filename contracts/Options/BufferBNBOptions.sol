@@ -283,7 +283,7 @@ contract BufferBNBOptions is
                 ((option.strike - currentPrice) * option.amount) /
                 currentPrice;
         }
-        // if (profit > option.lockedAmount) profit = option.lockedAmount;
+        if (profit > option.lockedAmount) profit = option.lockedAmount;
         pool.send(optionID, payable(ownerOf(optionID)), profit);
     }
 
