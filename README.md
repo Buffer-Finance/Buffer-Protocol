@@ -35,6 +35,23 @@ npm run coverage
 
 [1]: https://nodejs.org/
 
+## Mainnet Contracts
+
+### iBFR Token 
+[0xa296aD1C47FE6bDC133f39555C1D1177BD51fBc5](https://bscscan.com/address/0xa296aD1C47FE6bDC133f39555C1D1177BD51fBc5)
+
+### iBFR-BNB Staking Contract 
+[0xe6c2cdd466eb1fa6bdfdb8af1bd072d4a57734c2](https://bscscan.com/address/0xe6c2cdd466eb1fa6bdfdb8af1bd072d4a57734c2)
+
+### BNB Options Write Pool Contract
+[0x7338ee5535F1E0f1a210a6Ef6dB34f5357EB9860](https://bscscan.com/address/0x7338ee5535F1E0f1a210a6Ef6dB34f5357EB9860)
+
+### Farm rBFR-iBFR
+[0x99d2daB13F11c698B7B66D48b81e5980f923201E](https://bscscan.com/address/0x99d2daB13F11c698B7B66D48b81e5980f923201E)
+
+### BufferBNBOptions Contract
+[0x1Ee5325eC7EEE1C8495E67B431e5D96BABfF965d](https://bscscan.com/address/0x1Ee5325eC7EEE1C8495E67B431e5D96BABfF965d)
+
 ## Testnet Contracts
 
 ### BufferBNBOptions
