@@ -34,7 +34,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
  * @title Buffer BNB Bidirectional (Call and Put) Options
  * @notice Buffer BNB Options Contract
  */
-contract BufferBNBOptions is
+contract BufferGenericBNBOptions is
     IBufferOptions,
     Ownable,
     ERC721,
@@ -59,6 +59,9 @@ contract BufferBNBOptions is
     AggregatorV3Interface public priceProvider;
     AggregatorV3Interface public bnbPriceProvider;
     BufferBNBPool public pool;
+
+    event PayReferralFee(address indexed referrer, uint256 amount);
+    event PayAdminFee(address indexed owner, uint256 amount);
 
     /**
      * @param pp The address of ChainLink BNB/USD price feed contract
@@ -317,8 +320,10 @@ contract BufferBNBOptions is
                 uint256 referralReward = (adminFee * referralRewardPercentage)/100;
                 adminFee = adminFee - referralReward;
                 payable(referrer).transfer(referralReward);
+                emit PayReferralFee(referrer, referralReward);
             }
             payable(owner()).transfer(adminFee);
+            emit PayAdminFee(owner(), adminFee);
         }
     }
 

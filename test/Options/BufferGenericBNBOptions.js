@@ -11,7 +11,7 @@ const {
 const BN = web3.utils.BN;
 const address0 = "0x0000000000000000000000000000000000000000";
 
-contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
+contract("BufferGenericBNBOptions(call)", ([user1, user2, user3, user4]) => {
   const contracts = getContracts();
 
   async function createOption({period, amount, strike, user, type} = {}) {
@@ -22,9 +22,11 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
       - ATM Option
       - user = user2
     */
-    const {BNBOptions, StakingBNB, PriceProvider} = await contracts;
+    const {GenericBNBOptions, StakingBNB, BTCPriceProvider} = await contracts;
 
-    const price = await PriceProvider.latestRoundData().then(x => x.answer);
+    const price = await BTCPriceProvider.latestRoundData().then(x => x.answer);
+
+    // console.log("price", price.toString());
 
     const [_period, _amount, _strike, from] = [
       new BN(24 * 3600 * (period || 1)),
@@ -34,12 +36,17 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
     ];
     const _type = type || OptionType.Call;
 
+    // console.log("_period", _period.toString());
+    // console.log("_amount", _amount.toString());
+    // console.log("_strike", _strike.toString());
+    // console.log("_type", _type);
+
     const [
       value,
       settlementFee,
       strikeFee,
       periodFee
-    ] = await BNBOptions.fees(
+    ] = await GenericBNBOptions.fees(
       _period,
       _amount,
       _strike,
@@ -51,7 +58,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
       x.periodFee
     ]);
 
-    const settlementFeePercentage = await BNBOptions.settlementFeePercentage();
+    const settlementFeePercentage = await GenericBNBOptions.settlementFeePercentage();
     let expectedSettlementFee = _amount.mul(settlementFeePercentage).div(new BN(100));
     assert(expectedSettlementFee.eq(settlementFee), "Settlement Fee is wrong");
 
@@ -63,20 +70,13 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
       return new BN(0);
     }
     const _price = new BN(price);
-    const calculatedStrikeFee = getStrikeFee(_strike, _type, _amount, _price);
-
     const _strikeFee = new BN(strikeFee);
-
-    // console.log("_price: ", parseInt(_price));
-    // console.log("Strike Fee: ", parseInt(_strikeFee));
-    // console.log("Calculated Strike Fee: ", parseInt(calculatedStrikeFee));
-
     assert(
       getStrikeFee(_strike, type, _amount, _price).eq(_strikeFee),
       "Strike Fee is wrong"
     );
 
-    const impliedVolRate = new BN(await BNBOptions.impliedVolRate.call());
+    const impliedVolRate = new BN(await GenericBNBOptions.impliedVolRate.call());
 
     const sqrt = (x) => {
       let result = x;
@@ -119,9 +119,13 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
     assert(expectedPeriodFee.eq(_periodFee), "Period Fee is wrong");
 
     const initialAdminBalance = await web3.eth.getBalance(user1);
-    const events = await BNBOptions.create(
+    
+    const _btcAmount = _amount.mul(new BN("500")).div(new BN("60e3"));
+    
+    const events = await GenericBNBOptions.create(
       _period,
       _amount,
+      _btcAmount,
       _strike,
       _type,
       from,
@@ -135,14 +139,14 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
 
     const createEvent = events.filter(event => event.event === "Create")[0];
 
-    const tokenHolder = await BNBOptions.ownerOf.call(createEvent.args.id);
+    const tokenHolder = await GenericBNBOptions.ownerOf.call(createEvent.args.id);
 
     const transferEvent = events.filter(event => event.event === "Transfer")[0];
     assert.isNotNull(
       transferEvent,
       "'Transfer' event has not been initialized"
     );
-    const stakingFeePercentage = await BNBOptions.stakingFeePercentage();
+    const stakingFeePercentage = await GenericBNBOptions.stakingFeePercentage();
     const stakingAmount = settlementFee.mul(stakingFeePercentage).div(new BN(100));
     const adminFee = settlementFee.sub(stakingAmount);
     const adminBalanceDiff = (new BN(finalAdminBalance)).sub(new BN(initialAdminBalance));
@@ -163,22 +167,22 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   }
 
   it("Should be owned by the first account", async () => {
-    const {BNBOptions, BNBPool, StakingBNB, PriceProvider} = await contracts;
-    // console.log("BNBOptions ", BNBOptions.address);
+    const {GenericBNBOptions, BNBPool, StakingBNB, BTCPriceProvider} = await contracts;
+    // console.log("GenericBNBOptions ", GenericBNBOptions.address);
     // console.log("BNBPool ", BNBPool.address);
     // console.log("StakingBNB ", StakingBNB.address);
-    // console.log("PriceProvider ", PriceProvider.address);
+    // console.log("BTCPriceProvider ", BTCPriceProvider.address);
 
     const OPTION_ISSUER_ROLE = await BNBPool.OPTION_ISSUER_ROLE.call();
 
-    await BNBPool.grantRole(OPTION_ISSUER_ROLE, BNBOptions.address, {from: user1});
+    await BNBPool.grantRole(OPTION_ISSUER_ROLE, GenericBNBOptions.address, {from: user1});
 
     const role = await BNBPool.hasRole.call(
       OPTION_ISSUER_ROLE,
-      BNBOptions.address
+      GenericBNBOptions.address
     );
     assert.equal(
-      await BNBOptions.owner.call(),
+      await GenericBNBOptions.owner.call(),
       user1,
       "The first account isn't the contract owner"
     );
@@ -234,8 +238,8 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should be able to keep staking fees as zero and then create an option", async () => {
-    const {BNBOptions, PriceProvider} = await contracts;
-    await BNBOptions.setStakingFeePercentage(
+    const {GenericBNBOptions, BTCPriceProvider} = await contracts;
+    await GenericBNBOptions.setStakingFeePercentage(
       0,
       {
         from: user1,
@@ -249,8 +253,8 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should be able to create a ITM Call option", async () => {
-    const {BNBOptions, PriceProvider} = await contracts;
-    const price = await PriceProvider.latestRoundData().then(x => x.answer);
+    const {GenericBNBOptions, BTCPriceProvider} = await contracts;
+    const price = await BTCPriceProvider.latestRoundData().then(x => x.answer);
     const createEvent = await createOption({strike: price.add(new BN(20e8)), type: 2});
     // assert(
     //   createEvent.id.eq(new BN(0)),
@@ -259,8 +263,9 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should be able to create a ITM Put option", async () => {
-    const {BNBOptions, PriceProvider} = await contracts;
-    const price = await PriceProvider.latestRoundData().then(x => x.answer);
+    const {GenericBNBOptions, BTCPriceProvider} = await contracts;
+    const price = await BTCPriceProvider.latestRoundData().then(x => x.answer);
+    console.log(price.toString());
     const createEvent = await createOption({strike: price.sub(new BN(20e8)), type: 1});
     // assert(
     //   createEvent.id.eq(new BN(0)),
@@ -269,8 +274,10 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should be able to create a OTM Put option", async () => {
-    const {BNBOptions, PriceProvider} = await contracts;
-    const price = await PriceProvider.latestRoundData().then(x => x.answer);
+    const {GenericBNBOptions, BTCPriceProvider} = await contracts;
+    // const assetBTCPriceProvider = GenericBNBOptions.BTCpriceProvider();
+    // const price = await BTCPriceProvider(assetBTCPriceProvider).latestRoundData().then(x => x.answer);
+    const price = new BN("60e3");
     const createEvent = await createOption({strike: price.add(new BN(20e8)), type: 1});
     // assert(
     //   createEvent.id.eq(new BN(0)),
@@ -279,8 +286,8 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should be able to create a OTM Call option", async () => {
-    const {BNBOptions, PriceProvider} = await contracts;
-    const price = await PriceProvider.latestRoundData().then(x => x.answer);
+    const {GenericBNBOptions, BTCPriceProvider} = await contracts;
+    const price = await BTCPriceProvider.latestRoundData().then(x => x.answer);
     const createEvent = await createOption({strike: price.sub(new BN(20e8)), type: 2});
     // assert(
     //   createEvent.id.eq(new BN(0)),
@@ -289,11 +296,11 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should exercise an ATM call option when strike is equal to currentPrice at the time of exercising with no profit", async () => {
-    const {BNBOptions, PriceProvider} = await contracts;
+    const {GenericBNBOptions, BTCPriceProvider} = await contracts;
     const {id} = await createOption({user: user2});
-    await PriceProvider.setPrice(new BN(380e8));
+    await BTCPriceProvider.setPrice(new BN(6e12));
 
-    const events = await BNBOptions.exercise(id, {from: user2})
+    const events = await GenericBNBOptions.exercise(id, {from: user2})
       .then(x => x.logs)
       .catch(x => assert.fail(x.reason || x));
 
@@ -316,11 +323,11 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Shouldn't exercise an ATM call option when strike is greater than currentPrice at the time of exercising", async () => {
-    const {BNBOptions, PriceProvider} = await contracts;
+    const {GenericBNBOptions, BTCPriceProvider} = await contracts;
     const {id} = await createOption();
-    await PriceProvider.setPrice(new BN(360e8));
+    await BTCPriceProvider.setPrice(new BN(360e8));
 
-    await BNBOptions.exercise(id, {from: user2}).then(
+    await GenericBNBOptions.exercise(id, {from: user2}).then(
       () => assert.fail("Should cancel"),
       x => {
         assert.equal(x.reason, "Current price is too low");
@@ -329,11 +336,11 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Shouldn't exercise an ATM put option when currentPrice is greater than strike at the time of exercising", async () => {
-      const {BNBOptions, PriceProvider} = await contracts;
+      const {GenericBNBOptions, BTCPriceProvider} = await contracts;
       const {id} = await createOption({type: 1});
-      const price = await PriceProvider.latestRoundData().then(x => x.answer);
-      await PriceProvider.setPrice(price.iadd(new BN(20e8)));
-      await BNBOptions.exercise(id, {from: user2}).then(
+      const price = await BTCPriceProvider.latestRoundData().then(x => x.answer);
+      await BTCPriceProvider.setPrice(price.iadd(new BN(20e8)));
+      await GenericBNBOptions.exercise(id, {from: user2}).then(
         () => assert.fail("Should cancel"),
         x => {
           assert.equal(x.reason, "Current price is too high");
@@ -343,23 +350,23 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
 
   // it("Should payout a profit proportional to the current amount when exercising an ATM put option when currentPrice is lesser than strike at the time of exercising", async () => {
   //   const initialBalance = new BN(await web3.eth.getBalance(user2), 10);
-  //   const {BNBOptions, PriceProvider} = await contracts;
-  //   const price = await PriceProvider.latestRoundData().then(x => x.answer);
+  //   const {GenericBNBOptions, BTCPriceProvider} = await contracts;
+  //   const price = await BTCPriceProvider.latestRoundData().then(x => x.answer);
   //   const amount = new BN(toWei(0.8));
   //   const {id} = await createOption({amount: amount, user: user2, type: 1});
 
-  //   let optionData = await BNBOptions.options.call(id);
+  //   let optionData = await GenericBNBOptions.options.call(id);
   //   Object.values(optionData).forEach(x => console.log(parseInt(x)));
     
   //   const newPrice = price.sub(new BN(20e8));
   //   console.log(parseInt(price), parseInt(newPrice));
 
-  //   await PriceProvider.setPrice(newPrice);
+  //   await BTCPriceProvider.setPrice(newPrice);
 
-  //   const ownerOfOption = await BNBOptions.ownerOf.call(id);
+  //   const ownerOfOption = await GenericBNBOptions.ownerOf.call(id);
   //   console.log("ownerOfOption", ownerOfOption, user2)
 
-  //   const events = await BNBOptions.exercise(id, {from: user2}).then(x => x.logs);
+  //   const events = await GenericBNBOptions.exercise(id, {from: user2}).then(x => x.logs);
   //   // console.log(events)
 
   //   const finalBalance = new BN(await web3.eth.getBalance(user2), 10);
@@ -377,15 +384,15 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   // });
 
   it("Should exercise an ATM call option when strike is less than currentPrice at the time of exercising with some profit", async () => {
-    const {BNBOptions, PriceProvider} = await contracts;
+    const {GenericBNBOptions, BTCPriceProvider} = await contracts;
     const {id} = await createOption();
 
-    const price = await PriceProvider.latestRoundData().then(x => x.answer);
-    await PriceProvider.setPrice(price.iadd(new BN(20e8)));
+    const price = await BTCPriceProvider.latestRoundData().then(x => x.answer);
+    await BTCPriceProvider.setPrice(price.iadd(new BN(20e8)));
 
-    // await PriceProvider.setPrice(new BN(400e8));
+    // await BTCPriceProvider.setPrice(new BN(400e8));
 
-    const events = await BNBOptions.exercise(id, {from: user2})
+    const events = await GenericBNBOptions.exercise(id, {from: user2})
       .then(x => x.logs)
       .catch(x => assert.fail(x.reason || x));
 
@@ -411,10 +418,10 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Shouldn't exercise other options", async () => {
-    const {BNBOptions} = await contracts;
+    const {GenericBNBOptions} = await contracts;
     const {id} = await createOption();
 
-    await BNBOptions.exercise(id, {from: user3}).then(
+    await GenericBNBOptions.exercise(id, {from: user3}).then(
       () => assert.fail("Exercising a call option should be canceled"),
       x => {
         assert.equal(
@@ -428,12 +435,12 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
 
   it("Shouldn't exercise an expired option", async () => {
     const period = parseInt(Math.random() * 28 + 1);
-    const {BNBOptions} = await contracts;
+    const {GenericBNBOptions} = await contracts;
     const {id} = await createOption({period});
     const snapId = await snapshot();
 
     await timeTravel(period * 24 * 3600 + 1);
-    await BNBOptions.exercise(id, {from: user2}).then(
+    await GenericBNBOptions.exercise(id, {from: user2}).then(
       () => assert.fail("Exercising a call option should be canceled"),
       x => {
         assert.equal(x.reason, "Option has expired", "Wrong error reason");
@@ -443,16 +450,16 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Shouldn't unlock an exercised option", async () => {
-    const {BNBOptions} = await contracts;
+    const {GenericBNBOptions} = await contracts;
     const {id} = await createOption();
-    await BNBOptions.exercise(id, {from: user2});
+    await GenericBNBOptions.exercise(id, {from: user2});
     const snapId = await snapshot();
 
     await timeTravel(24 * 3600 + 1);
 
-    // const owner = await BNBOptions.owner.call();
+    // const owner = await GenericBNBOptions.owner.call();
 
-    await BNBOptions.unlock(id).then(
+    await GenericBNBOptions.unlock(id).then(
       () => assert.fail("Exercising a call option should be canceled"),
       x => {
         assert.equal(x.reason, "Option is not active", "Wrong error reason");
@@ -463,10 +470,10 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
 
   it("Shouldn't unlock an active option", async () => {
     const period = parseInt(Math.random() * 28 + 1);
-    const {BNBOptions} = await contracts;
+    const {GenericBNBOptions} = await contracts;
     const {id} = await createOption({period});
     const test = () =>
-      BNBOptions.unlock(id).then(
+      GenericBNBOptions.unlock(id).then(
         () => assert.fail("Exercising a call option should be canceled"),
         x => {
           assert.equal(
@@ -480,10 +487,10 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should unlock an expired option", async () => {
-    const {BNBOptions} = await contracts;
+    const {GenericBNBOptions} = await contracts;
     const {id} = await createOption({user: user2});
 
-    const expectedPremium = await BNBOptions.options
+    const expectedPremium = await GenericBNBOptions.options
       .call(id)
       .then(x => x.premium)
       .then(parseInt);
@@ -491,7 +498,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
     const snapId = await snapshot();
 
     await timeTravel(24 * 3600 * 3);
-    const events = await BNBOptions.unlock(id, {from: user3})
+    const events = await GenericBNBOptions.unlock(id, {from: user3})
       .then(x => x.logs)
       .catch(x => assert.fail(x.reason || x));
 
@@ -515,7 +522,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should unlock multiple expired options", async () => {
-    const {BNBOptions} = await contracts;
+    const {GenericBNBOptions} = await contracts;
     let ids = [];
     for (let i = 0; i < 5; i++) {
       const {id} = await createOption({user: user2});
@@ -525,7 +532,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
 
     // const {id} = await createOption({user: user2});
 
-    const getPremium = async (id) => await BNBOptions.options
+    const getPremium = async (id) => await GenericBNBOptions.options
       .call(id)
       .then(x => x.premium)
       .then(parseInt) 
@@ -535,7 +542,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
     const snapId = await snapshot();
 
     await timeTravel(24 * 3600 * 3);
-    const events = await BNBOptions.unlockAll(ids, {from: user3})
+    const events = await GenericBNBOptions.unlockAll(ids, {from: user3})
       .then(x => x.logs)
       .catch(x => assert.fail(x.reason || x));
 
@@ -586,24 +593,24 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should approve someone to transfer the token on your behalf", async () => {
-    const {BNBOptions} = await contracts;
+    const {GenericBNBOptions} = await contracts;
     const {id} = await createOption({user: user2});
-    await BNBOptions.approve(user4, id, {from: user2});
-    const approvedHolder = await BNBOptions.getApproved.call(id);
+    await GenericBNBOptions.approve(user4, id, {from: user2});
+    const approvedHolder = await GenericBNBOptions.getApproved.call(id);
 
     assert.equal(approvedHolder, user4, "User not approved");
   });
 
   it("Should exercise on someone else's behalf if approved and execution should reward the new holder", async () => {
-    const {BNBOptions, PriceProvider, BNBPool} = await contracts;
+    const {GenericBNBOptions, BTCPriceProvider, BNBPool} = await contracts;
     const {id} = await createOption({user: user2});
 
-    await BNBOptions.setAutoExerciseStatus(true, {from: user2});
-    // console.log("autoExerciseStatus", await BNBOptions.autoExerciseStatus.call(user2));
+    await GenericBNBOptions.setAutoExerciseStatus(true, {from: user2});
+    // console.log("autoExerciseStatus", await GenericBNBOptions.autoExerciseStatus.call(user2));
 
-    const approvedHolder = await BNBOptions.owner.call();
+    const approvedHolder = await GenericBNBOptions.owner.call();
     // console.log("approvedHolder", approvedHolder, user1, user2, user3);
-    await PriceProvider.setPrice(new BN(480e8));
+    await BTCPriceProvider.setPrice(new BN(60100e8));
 
     const initialOwnerBalance = await web3.eth.getBalance(user2).then(parseInt);
 
@@ -611,7 +618,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
 
     await timeTravel((24 * 3600) - (20 * 60));
 
-    const [events, receipt] = await BNBOptions.exercise(id, {
+    const [events, receipt] = await GenericBNBOptions.exercise(id, {
       from: user1,
     })
       .then(x => [x.logs, x.receipt])
@@ -620,7 +627,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
     const finalOwnerBalance = await web3.eth.getBalance(user2).then(parseInt);
     const ownerBalanceDiff = finalOwnerBalance - initialOwnerBalance;
 
-    const lockedAmount = new BN(await BNBOptions.options.call(id).then(x => x.lockedAmount));
+    const lockedAmount = new BN(await GenericBNBOptions.options.call(id).then(x => x.lockedAmount));
 
     const exerciseEvent = events.filter(event => event.event === "Exercise")[0];
     const burnEvent = events.filter(event => event.event === "Transfer")[0];
@@ -644,19 +651,19 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Shouldn't allow random user to be able to exercise someone else's option", async () => {
-    const {BNBOptions, PriceProvider, BNBPool} = await contracts;
+    const {GenericBNBOptions, BTCPriceProvider, BNBPool} = await contracts;
     const {id} = await createOption({user: user2});
 
-    await BNBOptions.setAutoExerciseStatus(false, {from: user2});
-    // console.log("autoExerciseStatus", await BNBOptions.autoExerciseStatus.call(user2));
+    await GenericBNBOptions.setAutoExerciseStatus(false, {from: user2});
+    // console.log("autoExerciseStatus", await GenericBNBOptions.autoExerciseStatus.call(user2));
 
-    // const owner = await BNBOptions.owner.call();
+    // const owner = await GenericBNBOptions.owner.call();
     const randomUser = user4;
-    assert.notEqual(randomUser, BNBOptions.ownerOf.call(id));
-    assert.notEqual(randomUser, BNBOptions.owner.call());
+    assert.notEqual(randomUser, GenericBNBOptions.ownerOf.call(id));
+    assert.notEqual(randomUser, GenericBNBOptions.owner.call());
 
     // console.log("approvedHolder", approvedHolder, user1, user2, user3);
-    await PriceProvider.setPrice(new BN(480e8));
+    await BTCPriceProvider.setPrice(new BN(60100e8));
 
     // const initialOwnerBalance = await web3.eth.getBalance(user2).then(parseInt);
 
@@ -665,7 +672,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
     await timeTravel((24 * 3600) - (20 * 60));
 
     const test = () =>
-      BNBOptions.exercise(id, {from: randomUser}).then(
+      GenericBNBOptions.exercise(id, {from: randomUser}).then(
         () => assert.fail("Exercising an option by a random user should be canceled"),
         x => {
           assert.equal(
@@ -681,21 +688,21 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Shouldn't allow owner to exercise someone else's option is status is not true", async () => {
-    const {BNBOptions, PriceProvider, BNBPool} = await contracts;
-    await PriceProvider.setPrice(new BN(380e8));
+    const {GenericBNBOptions, BTCPriceProvider, BNBPool} = await contracts;
+    await BTCPriceProvider.setPrice(new BN(6e12));
 
     const {id} = await createOption({user: user2});
 
-    await BNBOptions.setAutoExerciseStatus(false, {from: user2});
-    // console.log("autoExerciseStatus", await BNBOptions.autoExerciseStatus.call(user2));
+    await GenericBNBOptions.setAutoExerciseStatus(false, {from: user2});
+    // console.log("autoExerciseStatus", await GenericBNBOptions.autoExerciseStatus.call(user2));
 
-    const owner = await BNBOptions.owner.call();
+    const owner = await GenericBNBOptions.owner.call();
     // const randomUser = user4;
-    // assert.notEqual(randomUser, BNBOptions.ownerOf.call(id));
-    // assert.notEqual(randomUser, BNBOptions.owner.call());
+    // assert.notEqual(randomUser, GenericBNBOptions.ownerOf.call(id));
+    // assert.notEqual(randomUser, GenericBNBOptions.owner.call());
 
     // console.log("approvedHolder", approvedHolder, user1, user2, user3);
-    await PriceProvider.setPrice(new BN(480e8));
+    await BTCPriceProvider.setPrice(new BN(60100e8));
 
     // const initialOwnerBalance = await web3.eth.getBalance(user2).then(parseInt);
 
@@ -704,7 +711,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
     await timeTravel((24 * 3600) - (20 * 60));
 
     const test = () =>
-      BNBOptions.exercise(id, {from: owner}).then(
+      GenericBNBOptions.exercise(id, {from: owner}).then(
         () => assert.fail("Exercising an option by a random user should be canceled"),
         x => {
           assert.equal(
@@ -720,21 +727,21 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Shouldn't allow owner to exercise someone else's option is status is true but the option is not in its last half an hour", async () => {
-    const {BNBOptions, PriceProvider, BNBPool} = await contracts;
-    await PriceProvider.setPrice(new BN(380e8));
+    const {GenericBNBOptions, BTCPriceProvider, BNBPool} = await contracts;
+    await BTCPriceProvider.setPrice(new BN(6e12));
 
     const {id} = await createOption({user: user2});
 
-    await BNBOptions.setAutoExerciseStatus(true, {from: user2});
-    // console.log("autoExerciseStatus", await BNBOptions.autoExerciseStatus.call(user2));
+    await GenericBNBOptions.setAutoExerciseStatus(true, {from: user2});
+    // console.log("autoExerciseStatus", await GenericBNBOptions.autoExerciseStatus.call(user2));
 
-    const owner = await BNBOptions.owner.call();
+    const owner = await GenericBNBOptions.owner.call();
     // const randomUser = user4;
-    // assert.notEqual(randomUser, BNBOptions.ownerOf.call(id));
-    // assert.notEqual(randomUser, BNBOptions.owner.call());
+    // assert.notEqual(randomUser, GenericBNBOptions.ownerOf.call(id));
+    // assert.notEqual(randomUser, GenericBNBOptions.owner.call());
 
     // console.log("approvedHolder", approvedHolder, user1, user2, user3);
-    await PriceProvider.setPrice(new BN(480e8));
+    await BTCPriceProvider.setPrice(new BN(60100e8));
 
     // const initialOwnerBalance = await web3.eth.getBalance(user2).then(parseInt);
 
@@ -743,7 +750,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
     await timeTravel((24 * 3600) - (40 * 60));
 
     const test = () =>
-      BNBOptions.exercise(id, {from: owner}).then(
+      GenericBNBOptions.exercise(id, {from: owner}).then(
         () => assert.fail("Exercising an option by a random user should be canceled"),
         x => {
           assert.equal(
@@ -759,28 +766,28 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
   });
 
   it("Should transfer the option to someone else", async () => {
-    const {BNBOptions, PriceProvider} = await contracts;
+    const {GenericBNBOptions, BTCPriceProvider} = await contracts;
     const {id} = await createOption({user: user2});
-    await BNBOptions.transferFrom(user2, user1, id, {from: user2});
+    await GenericBNBOptions.transferFrom(user2, user1, id, {from: user2});
 
-    const tokenHolder = await BNBOptions.ownerOf.call(id);
+    const tokenHolder = await GenericBNBOptions.ownerOf.call(id);
 
     assert.equal(tokenHolder, user1, "Token not transferred");
   });
 
   it("Should transfer the option to someone else and execution should reward the new holder", async () => {
-    const {BNBOptions, PriceProvider, BNBPool} = await contracts;
-    await PriceProvider.setPrice(new BN(380e8));
+    const {GenericBNBOptions, BTCPriceProvider, BNBPool} = await contracts;
+    await BTCPriceProvider.setPrice(new BN(6e12));
 
     const {id} = await createOption({user: user2});
-    await PriceProvider.setPrice(new BN(480e8));
+    await BTCPriceProvider.setPrice(new BN(60100e8));
 
-    await BNBOptions.transferFrom(user2, user3, id, {from: user2});
-    const tokenHolder = await BNBOptions.ownerOf.call(id);
+    await GenericBNBOptions.transferFrom(user2, user3, id, {from: user2});
+    const tokenHolder = await GenericBNBOptions.ownerOf.call(id);
 
     const initialOwnerBalance = await web3.eth.getBalance(user3).then(parseInt);
 
-    const [events, receipt] = await BNBOptions.exercise(id, {
+    const [events, receipt] = await GenericBNBOptions.exercise(id, {
       from: user3,
     })
       .then(x => [x.logs, x.receipt])
@@ -791,7 +798,7 @@ contract("BufferBNBOptions(call)", ([user1, user2, user3, user4]) => {
       finalOwnerBalance - initialOwnerBalance + receipt.gasUsed;
 
     const lockedLiquidity = await BNBPool.lockedLiquidity.call(
-      BNBOptions.address,
+      GenericBNBOptions.address,
       id
     );
     const exerciseEvent = events.filter(event => event.event === "Exercise")[0];

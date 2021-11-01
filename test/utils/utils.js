@@ -1,6 +1,8 @@
 const {time} = require("@openzeppelin/test-helpers");
 const PriceContract = artifacts.require("FakePriceProvider");
+const BTCPriceContract = artifacts.require("FakeBTCPriceProvider");
 const BNBOptionsContract = artifacts.require("BufferBNBOptions");
+const GenericBNBOptionsContract = artifacts.require("BufferGenericBNBOptions");
 const BNBPoolContract = artifacts.require("BufferBNBPool");
 const IBFR = artifacts.require("IBFR");
 const BufferStakingBNBContract = artifacts.require("BufferStakingBNB");
@@ -23,25 +25,31 @@ const getContracts = async () => {
   const [
     PriceProvider,
     BNBOptions,
+    GenericBNBOptions,
     BNBPool,
     IBFRContract,
     StakingBNB,
     StakingIBFR,
+    BTCPriceProvider
   ] = await Promise.all([
     PriceContract.deployed(),
     BNBOptionsContract.deployed(),
+    GenericBNBOptionsContract.deployed(),
     BNBPoolContract.deployed(),
     IBFR.deployed(),
     BufferStakingBNBContract.deployed(),
     BufferStakingIBFRContract.deployed(),
+    BTCPriceContract.deployed()
   ]);
   return {
     PriceProvider,
     BNBOptions,
+    GenericBNBOptions,
     BNBPool,
     IBFRContract,
     StakingBNB,
     StakingIBFR,
+    BTCPriceProvider
   };
 };
 
