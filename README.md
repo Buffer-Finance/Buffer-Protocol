@@ -50,13 +50,23 @@ npm run coverage
 __v1__: [0x99d2daB13F11c698B7B66D48b81e5980f923201E](https://bscscan.com/address/0x99d2daB13F11c698B7B66D48b81e5980f923201E)
 __v2__: [0xac5F9128FE1BD35DA505358dc4C08BABB535CCa6](https://bscscan.com/address/0xac5F9128FE1BD35DA505358dc4C08BABB535CCa6)
 
-### BufferBNBOptions Contract
+### BufferOptions
+#### BNB 
 [0x1Ee5325eC7EEE1C8495E67B431e5D96BABfF965d](https://bscscan.com/address/0x1Ee5325eC7EEE1C8495E67B431e5D96BABfF965d)
+#### ETH 
+[0x78da038cc0c5969cd72dedc343a2bc933c37bfff](https://testnet.bscscan.com/address/0x78da038cc0c5969cd72dedc343a2bc933c37bfff#contracts)
+#### BTC 
+[0xFb3Df4b8B6C11d556B23251f51F54F1da19cF465](https://testnet.bscscan.com/address/0xFb3Df4b8B6C11d556B23251f51F54F1da19cF465#contracts)
 
 ## Testnet Contracts
 
-### BufferBNBOptions
+### BufferOptions
+#### BNB 
 [0x87B690161B6C8d4aa490EC2aA5BB08569D0CFf3A](https://testnet.bscscan.com/address/0x87B690161B6C8d4aa490EC2aA5BB08569D0CFf3A#contracts)
+#### ETH 
+[0x96A79E05008FF0700a1be67F40C4d3A6c7ea2c6b](https://testnet.bscscan.com/address/0x96A79E05008FF0700a1be67F40C4d3A6c7ea2c6b#contracts)
+#### BTC 
+[0x669D05898b6b813b1e0Bd83C8ef6529D51bA0CE9](https://testnet.bscscan.com/address/0x669D05898b6b813b1e0Bd83C8ef6529D51bA0CE9#contracts)
 
 ### BufferStakingBNB
 [0x6D318d7a200f62eB66F3eb86f7EcBB03440e9482](https://testnet.bscscan.com/address/0x6D318d7a200f62eB66F3eb86f7EcBB03440e9482#contracts)
