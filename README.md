@@ -54,9 +54,11 @@ __v2__: [0xac5F9128FE1BD35DA505358dc4C08BABB535CCa6](https://bscscan.com/address
 #### BNB 
 [0x1Ee5325eC7EEE1C8495E67B431e5D96BABfF965d](https://bscscan.com/address/0x1Ee5325eC7EEE1C8495E67B431e5D96BABfF965d)
 #### ETH 
-[0x78da038cc0c5969cd72dedc343a2bc933c37bfff](https://testnet.bscscan.com/address/0x78da038cc0c5969cd72dedc343a2bc933c37bfff#contracts)
+[0x78da038cc0c5969cd72dedc343a2bc933c37bfff](https://bscscan.com/address/0x78da038cc0c5969cd72dedc343a2bc933c37bfff#contracts)
 #### BTC 
-[0xFb3Df4b8B6C11d556B23251f51F54F1da19cF465](https://testnet.bscscan.com/address/0xFb3Df4b8B6C11d556B23251f51F54F1da19cF465#contracts)
+[0xFb3Df4b8B6C11d556B23251f51F54F1da19cF465](https://bscscan.com/address/0xFb3Df4b8B6C11d556B23251f51F54F1da19cF465#contracts)
+#### TSLA 
+[0xEEA2ae9c074E87596A85ABE698B2Afebc9B57893](https://bscscan.com/address/0xEEA2ae9c074E87596A85ABE698B2Afebc9B57893#contracts)
 
 ## Testnet Contracts
 
