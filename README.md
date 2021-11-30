@@ -58,7 +58,7 @@ __v2__: [0xac5F9128FE1BD35DA505358dc4C08BABB535CCa6](https://bscscan.com/address
 #### BTC 
 [0xFb3Df4b8B6C11d556B23251f51F54F1da19cF465](https://bscscan.com/address/0xFb3Df4b8B6C11d556B23251f51F54F1da19cF465#contracts)
 #### TSLA 
-[0xEEA2ae9c074E87596A85ABE698B2Afebc9B57893](https://bscscan.com/address/0xEEA2ae9c074E87596A85ABE698B2Afebc9B57893#contracts)
+[0x8Deb5aeA3E064EEf635f8A48552c512778b43ea6](https://bscscan.com/address/0x8Deb5aeA3E064EEf635f8A48552c512778b43ea6#contracts)
 
 ## Testnet Contracts
 
